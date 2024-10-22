@@ -9,7 +9,7 @@
     <Object name="xc7a35t_0" gui_info="">
       <Properties Property="FULL_PROBES.FILE" value=""/>
       <Properties Property="PROBES.FILE" value=""/>
-      <Properties Property="PROGRAM.HW_BITSTREAM" value="Trojans_Initial/c6288_train/c6288_safe.bit"/>
+      <Properties Property="PROGRAM.HW_BITSTREAM" value="Trojans_Initial/c6288_train/c6288_trojan.bit"/>
       <Properties Property="SLR.COUNT" value="1"/>
     </Object>
   </ObjectList>

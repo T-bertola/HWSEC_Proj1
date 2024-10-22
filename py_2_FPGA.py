@@ -33,36 +33,45 @@ Wait for a second and you should get the output back! It will also be printed ou
     try:
         while True:
 
-            for i in range(0,5):
+            for i in range(0,2000):
                 rand = random.randint(0, 2**32 - 1)
                 a = (int(rand) & 0xFFFF0000) >> 16
                 b = (int(rand) & 0x0000FFFF)
                 result = a * b
                 # Send data to the device
-                print(f"The expected result of {a} * {b} is: {result}")
-                data_to_send = rand.to_bytes(8, byteorder='big')
-                data_bytes = bytes.fromhex(data_to_send)
-                ser.write(data_bytes)
+#                result_hex = result.to_bytes(bytes_to_read, byteorder='big')
+#                hex_string_result = ''.join(f'{byte:02X}' for byte in result_hex)
+#                a_hex = ''.join(f'{byte:02X}' for byte in a.to_bytes(bytes_to_read, byteorder='big'))
+#                b_hex = ''.join(f'{byte:02X}' for byte in b.to_bytes(bytes_to_read, byteorder='big'))
+#                print(f"The expected result of {a_hex} * {b_hex} is: {hex_string_result}")
+                data_to_send = rand.to_bytes(bytes_to_read, byteorder='big')
+               # data_bytes = bytes.fromhex(data_to_send)
+                ser.write(data_to_send)
 
                 # Read data from the FPGA
                 received_data = ser.read(
-                    bytes_to_read)  # to-do, change the parameter into the number of bytes needed to read from FPGA
+                    4)  # to-do, change the parameter into the number of bytes needed to read from FPGA
 
                 # Convert the received bytes to a hexadecimal string
-                hex_string = ''.join(f'{byte:02X}' for byte in received_data)
+#                hex_string = ''.join(f'{byte:02X}' for byte in received_data)
 
                 # Print the received data as a hexadecimal string
-                print(f"The Actual result of {a} * {b} is: {hex_string}")
+#                print(f"The Actual result of {a} * {b} is: {hex_string}")
 
                 byte_to_int = int.from_bytes(received_data, byteorder='big')
                 if byte_to_int != result:
                     #Error, or in this case, trojan 0.0
                     # Find the difference in the output
+                    # Convert the received bytes to a hexadecimal string
+                    #hex_string = ''.join(f'{byte:02X}' for byte in received_data)
+
+                    # Print the received data as a hexadecimal string
+                   # print(f"The Actual result of {a} * {b} is: {hex_string}")
                     result_difference = byte_to_int ^ result
                     incorrect_output.append(result_difference)
                     #store the input
                     incorrect_inputs.append(rand)
-
+            break
 
 
 
@@ -71,6 +80,13 @@ Wait for a second and you should get the output back! It will also be printed ou
         pass
     finally:
         ser.close()
+        and_guy = incorrect_inputs[0]
+        or_guy = incorrect_inputs[0]
+        for i in range(1, len(incorrect_inputs)):
+            and_guy = and_guy & incorrect_inputs[i]
+            or_guy = or_guy | incorrect_inputs[i]
+        trig_result = ~(and_guy^or_guy)
+
         print("Connection closed.")
 else:
     print(f"Failed to connect to {com_port}")
