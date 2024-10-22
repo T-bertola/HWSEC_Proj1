@@ -4,7 +4,7 @@ from threading import Thread
 import serial
 import random
 
-com_port = 'COM10'  # TO-DO, chagne the com port of the FPGA device
+com_port = 'COM9'  # TO-DO, chagne the com port of the FPGA device
 baud_rate = 115200  # Don't change this
 
 # Open the COM port
@@ -86,6 +86,16 @@ Wait for a second and you should get the output back! It will also be printed ou
             and_guy = and_guy & incorrect_inputs[i]
             or_guy = or_guy | incorrect_inputs[i]
         trig_result = ~(and_guy^or_guy)
+        for i in range (0,32):
+            bit = (trig_result >> i) & 0x01
+            if bit == 1 :
+                #We have a trigger input, check the or list to see if its a 0
+                bit_or =  (or_guy >> i) & 0x01
+                if bit_or == 0:
+                    #Then the bit we found was a 0 trigger
+                    print(f"Bit {i} is a 0 for the trigger")
+                else:
+                    print(f"Bit {i} is a 1 for the trigger")
 
         print("Connection closed.")
 else:
