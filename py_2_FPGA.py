@@ -1,6 +1,6 @@
 import serial
 
-com_port = 'COM4'  # TO-DO, chagne the com port of the FPGA device
+com_port = 'COM10'  # TO-DO, chagne the com port of the FPGA device
 baud_rate = 115200  # Don't change this
 
 # Open the COM port
