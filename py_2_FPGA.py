@@ -33,7 +33,7 @@ Wait for a second and you should get the output back! It will also be printed ou
     try:
         while True:
 
-            for i in range(0,2000):
+            for i in range(0,1000):
                 rand = random.randint(0, 2**32 - 1)
                 a = (int(rand) & 0xFFFF0000) >> 16
                 b = (int(rand) & 0x0000FFFF)
@@ -96,7 +96,12 @@ Wait for a second and you should get the output back! It will also be printed ou
                     print(f"Bit {i} is a 0 for the trigger")
                 else:
                     print(f"Bit {i} is a 1 for the trigger")
-
+        payload = incorrect_output[0]
+        for i in range(0, 32):
+            pay_bit = (payload >> i) & 0x01
+            if pay_bit == 1:
+                #We have a bit changed by the payload
+                print(f"Bit {i} is changed in the payload")
         print("Connection closed.")
 else:
     print(f"Failed to connect to {com_port}")
