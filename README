@@ -1,12 +1,14 @@
-The methodology used to detect this trojan leverages the use of the OR, AND and XOR bitwise operations. First, random
-data is generated to input into the circuit under test. This data is then used to calculate what the expected output
-of the circuit should be. Then the outputs are read back from the circuit under test. The expected and received are
-compared to one another. If there isn't a difference, the algorithm moves on to the next random inputs. If the two are
-different, the expected and received are XORd together and stored in a list. The inputs are also stored in a list. Once
-a certain amount of random inputs are generated that trigger the trojan, the data parsing begins. The inputs that did
-not match the expected outputs are first ANDed together to give the location of the trigger bits that need to be set
-to '1'. Then the inputs are ORed together to give the location of the trigger bits that need to be set to '0'. The
-results gives the location of all the trigger bits. To find the payload bits on the output, the list of differing
-outputs is traversed, looking for where the XOR operation set a bit to '1',signaling a difference in the outputs. This
-gives the payload bits. Some key features of this method is that the number of inputs, number of random inputs, and the
-number of data read is all configurable so this method should work on other circuit designs.
+The methodology used to detect this trojan leverages the use of the OR, AND, XOR, and XNOR bitwise operations. First,
+random data is generated to input into the circuit under test. This data is then used to calculate what the expected
+output of the circuit should be. Then the outputs are read back from the circuit under test. The expected and received
+are compared to one another. If there isn't a difference, the algorithm moves on to the next random input. If the two
+are different, the expected and received are XORed together and stored in a list and the inputs are also stored in a
+list. Once a certain amount of random inputs are generated, the data parsing begins. The inputs that did not match the
+expected outputs are first ANDed together to give the location of the trigger bits that need to be set to '1'. Then, the
+inputs are ORed together to give the location of the trigger bits that need to be set to '0'. After all the trigger
+inputs have been ANDed and ORed together, the final AND and OR results are XNORed. The result gives the location of all
+the trigger bits where each bit set after the XNOR is determined to be a trigger bit. To find the payload bits on the
+output, the list of differing outputs is traversed, looking for where the XOR operation set a bit to '1',signaling a
+difference in the outputs. This reveals the payload bits. Some key features of this method is that the number of inputs,
+number of random inputs, and the amount of data read is all configurable so this method should work on other circuit
+designs.
