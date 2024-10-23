@@ -34,53 +34,37 @@ Wait for a second and you should get the output back! It will also be printed ou
         while True:
 
             for i in range(0,1000):
+                #Generate random data
                 rand = random.randint(0, 2**32 - 1)
                 a = (int(rand) & 0xFFFF0000) >> 16
                 b = (int(rand) & 0x0000FFFF)
                 result = a * b
                 # Send data to the device
-#                result_hex = result.to_bytes(bytes_to_read, byteorder='big')
-#                hex_string_result = ''.join(f'{byte:02X}' for byte in result_hex)
-#                a_hex = ''.join(f'{byte:02X}' for byte in a.to_bytes(bytes_to_read, byteorder='big'))
-#                b_hex = ''.join(f'{byte:02X}' for byte in b.to_bytes(bytes_to_read, byteorder='big'))
-#                print(f"The expected result of {a_hex} * {b_hex} is: {hex_string_result}")
                 data_to_send = rand.to_bytes(bytes_to_read, byteorder='big')
                # data_bytes = bytes.fromhex(data_to_send)
                 ser.write(data_to_send)
 
                 # Read data from the FPGA
                 received_data = ser.read(
-                    4)  # to-do, change the parameter into the number of bytes needed to read from FPGA
-
-                # Convert the received bytes to a hexadecimal string
-#                hex_string = ''.join(f'{byte:02X}' for byte in received_data)
-
-                # Print the received data as a hexadecimal string
-#                print(f"The Actual result of {a} * {b} is: {hex_string}")
+                    bytes_to_read)  # number of bytes is dictated by the global variableL bytes_to_read
 
                 byte_to_int = int.from_bytes(received_data, byteorder='big')
                 if byte_to_int != result:
                     #Error, or in this case, trojan 0.0
                     # Find the difference in the output
                     # Convert the received bytes to a hexadecimal string
-                    #hex_string = ''.join(f'{byte:02X}' for byte in received_data)
-
-                    # Print the received data as a hexadecimal string
-                   # print(f"The Actual result of {a} * {b} is: {hex_string}")
                     result_difference = byte_to_int ^ result
                     incorrect_output.append(result_difference)
                     #store the input
                     incorrect_inputs.append(rand)
             break
-
-
-
-
     except KeyboardInterrupt:
         pass
     finally:
         ser.close()
+        #and list will have the trigger bits corresponding to a '1'
         and_guy = incorrect_inputs[0]
+        #or list will have the trigger bits corresponding to a '0' set to '1'
         or_guy = incorrect_inputs[0]
         for i in range(1, len(incorrect_inputs)):
             and_guy = and_guy & incorrect_inputs[i]
@@ -95,7 +79,9 @@ Wait for a second and you should get the output back! It will also be printed ou
                     #Then the bit we found was a 0 trigger
                     print(f"Bit {i} is a 0 for the trigger")
                 else:
+                    #The bit we found was a 1 trigger
                     print(f"Bit {i} is a 1 for the trigger")
+        #Check for the payload bit on the output
         payload = incorrect_output[0]
         for i in range(0, 32):
             pay_bit = (payload >> i) & 0x01
