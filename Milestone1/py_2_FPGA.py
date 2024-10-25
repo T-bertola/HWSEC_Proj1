@@ -4,8 +4,12 @@ from threading import Thread
 import serial
 import random
 
-com_port = 'COM9'  # TO-DO, chagne the com port of the FPGA device
+com_port = 'COM10'  # TO-DO, chagne the com port of the FPGA device
 baud_rate = 115200  # Don't change this
+
+SEED = 0x43984934
+input_length = 32
+random.seed(SEED)
 
 # Open the COM port
 ser = serial.Serial(com_port, baud_rate, timeout=1)
