@@ -17,16 +17,17 @@ ser = serial.Serial(com_port, baud_rate, timeout=1)
 # number of bytes to read, dependent on the circuit implementation
 bytes_to_read = 16
 bytes_to_write = 23
-num_tests = 5000
+num_tests = 1000
 
 #SEED = 0x43984934
 SEED = 0x43984998
 input_length = bytes_to_write * 8
 random.seed(SEED)
 
-incorrect_output = []
+incorrect_outputs = []
 incorrect_inputs = []
 percent_errors = []
+pay_bits = []
 
 if ser.is_open:
     print(f"Connected to {com_port} at {baud_rate} baud\n")
@@ -49,7 +50,7 @@ Wait for a second and you should get the output back! It will also be printed ou
                 with open('output.csv', 'w', newline='') as file:
                     for i in range(0, num_tests):
                         if (i % (num_tests / 10)) == 0:
-                            print(f"{10*(i / 100)}% done.")
+                            print(f"{(i / num_tests) * 100}% done.")
                         # Generate random data
                         rand = random.randint(0, 2 ** input_length - 1)
                         # Send data to the device
@@ -79,7 +80,7 @@ Wait for a second and you should get the output back! It will also be printed ou
             reader = csv.reader(file)
             for row in file:
                 if (i % (num_tests / 10)) == 0:
-                    print(f"{10 * (i / 100)}% done.")
+                    print(f"{(i / num_tests) * 100}% done.")
                 text = row.split(',')
                 in_rand = int(text[0])
                 out_rand = int(text[1])
@@ -101,18 +102,18 @@ Wait for a second and you should get the output back! It will also be printed ou
                     # Find the difference in the output
                     # Convert the received bytes to a hexadecimal string
                     result_difference = byte_to_int ^ out_rand
-                    incorrect_output.append(result_difference)
+                    incorrect_outputs.append(result_difference)
                     #store the input
                     incorrect_inputs.append(in_rand)
                     percent_errors.append(error)
                 i += 1
-            if (len(incorrect_output) != 0):
+            if (len(incorrect_outputs) != 0):
                 # and list will have the trigger bits corresponding to a '1'
                 and_guy = incorrect_inputs[0]
                 # or list will have the trigger bits corresponding to a '0' set to '1'
                 or_guy = incorrect_inputs[0]
                 for i in range(1, len(incorrect_inputs)):
-                    print(f"Percent Error: {percent_errors[i]}")
+                    #print(f"Percent Error: {percent_errors[i]}")
                     and_guy = and_guy & incorrect_inputs[i]
                     or_guy = or_guy | incorrect_inputs[i]
                 trig_result = ~(and_guy ^ or_guy)
@@ -128,12 +129,16 @@ Wait for a second and you should get the output back! It will also be printed ou
                             # The bit we found was a 1 trigger
                             print(f"Bit {i} is a 1 for the trigger")
                 # Check for the payload bit on the output
-                payload = incorrect_output[0]
-                for i in range(0, bytes_to_read * 8):
-                    pay_bit = (payload >> i) & 0x01
-                    if pay_bit == 1:
-                        # We have a bit changed by the payload
-                        print(f"Bit {i} is changed in the payload")
+                for i in range(0, len(incorrect_outputs)):
+                    payload = incorrect_outputs[i]
+                    payload_bit = []
+                    for j in range(0, bytes_to_read * 8):
+                        pay_bit = (payload >> j) & 0x01
+                        if pay_bit == 1:
+                            # We have a bit changed by the payload
+                            payload_bit.append(j)
+                    print(f"For input: {incorrect_inputs[i]}, payload bits were {payload_bit} ")
+                print(f"Number of incorrect outputs: {len(incorrect_outputs)}")
             print("Connection closed.")
             ser.close()
 
