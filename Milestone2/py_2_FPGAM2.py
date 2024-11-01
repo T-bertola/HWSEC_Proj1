@@ -137,7 +137,11 @@ Wait for a second and you should get the output back! It will also be printed ou
                         if pay_bit == 1:
                             # We have a bit changed by the payload
                             payload_bit.append(j)
+                            # If this has not been encountered before
+                            if j not in pay_bits:
+                                pay_bits.append(j)
                     print(f"For input: {incorrect_inputs[i]}, payload bits were {payload_bit} ")
+                print(f"Bits affected by payload: {sorted(pay_bits)}")
                 print(f"Number of incorrect outputs: {len(incorrect_outputs)}")
             print("Connection closed.")
             ser.close()
