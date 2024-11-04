@@ -7,8 +7,7 @@ import csv
 import time
 
 #from Milestone1.py_2_FPGA import bytes_to_read
-
-com_port = 'COM10'  # TO-DO, chagne the com port of the FPGA device
+com_port = 'COM9'  # TO-DO, chagne the com port of the FPGA device
 baud_rate = 115200  # Don't change this
 
 # Open the COM port
@@ -16,7 +15,7 @@ ser = serial.Serial(com_port, baud_rate, timeout=1)
 
 # number of bytes to read, dependent on the circuit implementation
 bytes_to_read = 4
-bytes_to_write = 6
+bytes_to_write = 5
 num_tests = 10000
 
 #SEED = 0x43984934
