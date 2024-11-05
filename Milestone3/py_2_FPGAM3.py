@@ -14,13 +14,14 @@ baud_rate = 115200  # Don't change this
 ser = serial.Serial(com_port, baud_rate, timeout=1)
 
 # number of bytes to read, dependent on the circuit implementation
-bytes_to_read = 4
-bytes_to_write = 5
+bytes_to_read = 16
+bytes_to_write = 23
 num_tests = 10000
+wait_time = 0.010
 
 #SEED = 0x43984934
 SEED = 0x43984998
-input_length = bytes_to_write * 8
+input_length = 178
 random.seed(SEED)
 
 incorrect_outputs = []
@@ -53,20 +54,21 @@ Wait for a second and you should get the output back! It will also be printed ou
                         # Generate random data
                         rand = random.randint(0, 2 ** input_length - 1)
                         # Send data to the device
-                        start_time = time.time()
+                        #start_time = time.time()
                         data_to_send = rand.to_bytes(bytes_to_write, byteorder='big')
                         # data_bytes = bytes.fromhex(data_to_send)
                         ser.write(data_to_send)
-
+                        #time.sleep(wait_time)
                         # Read data from the FPGA
                         received_data = ser.read(
                             bytes_to_read)  # number of bytes is dictated by the global variableL bytes_to_read
 
                         #write input, output to csv file
-                        end_time = time.time()
+                        #end_time = time.time()
                         byte_to_int = int.from_bytes(received_data, byteorder='big')
                         write = csv.writer(file)
-                        write.writerow([str(rand), str(byte_to_int), str(end_time - start_time)])
+                        #write.writerow([str(rand), str(byte_to_int), str(end_time - start_time)])
+                        write.writerow([str(rand), str(byte_to_int), 0])
                     break
         except KeyboardInterrupt:
             pass
@@ -83,28 +85,30 @@ Wait for a second and you should get the output back! It will also be printed ou
                 text = row.split(',')
                 in_rand = int(text[0])
                 out_rand = int(text[1])
-                good_time = float(text[2])
+                #good_time = float(text[2])
 
-                start_time = time.time()
+                #start_time = time.time()
                 # Send data to the device
                 data_to_send = in_rand.to_bytes(bytes_to_write, byteorder='big')
 
+                #time.sleep(wait_time)
                 ser.write(data_to_send)
                 # Read data from the FPGA
                 received_data = ser.read(
                     bytes_to_read)  # number of bytes is dictated by the global variableL bytes_to_read
-                end_time = time.time()
+                #end_time = time.time()
                 byte_to_int = int.from_bytes(received_data, byteorder='big')
-                error = (good_time - (end_time - start_time)) / (good_time) * 100
+                #error = (good_time - (end_time - start_time)) / (good_time) * 100
                 if (byte_to_int != out_rand):
                     #Error, or in this case, trojan 0.0
                     # Find the difference in the output
                     # Convert the received bytes to a hexadecimal string
                     result_difference = byte_to_int ^ out_rand
+                    print(f"Incorrect input: {in_rand} Result difference: {bin(result_difference)}")
                     incorrect_outputs.append(result_difference)
                     #store the input
                     incorrect_inputs.append(in_rand)
-                    percent_errors.append(error)
+                    #percent_errors.append(error)
                 i += 1
             if (len(incorrect_outputs) != 0):
                 # and list will have the trigger bits corresponding to a '1'
