@@ -14,14 +14,14 @@ baud_rate = 115200  # Don't change this
 ser = serial.Serial(com_port, baud_rate, timeout=1)
 
 # number of bytes to read, dependent on the circuit implementation
-bytes_to_read = 16
-bytes_to_write = 23
+bytes_to_read = 4
+bytes_to_write = 5
 num_tests = 10000
 wait_time = 0.010
 
 #SEED = 0x43984934
 SEED = 0x43984998
-input_length = 178
+input_length = 33
 random.seed(SEED)
 
 incorrect_outputs = []
@@ -100,11 +100,12 @@ Wait for a second and you should get the output back! It will also be printed ou
                 byte_to_int = int.from_bytes(received_data, byteorder='big')
                 #error = (good_time - (end_time - start_time)) / (good_time) * 100
                 if (byte_to_int != out_rand):
+                    print(f"Input at index {i} triggered trojan")
                     #Error, or in this case, trojan 0.0
                     # Find the difference in the output
                     # Convert the received bytes to a hexadecimal string
                     result_difference = byte_to_int ^ out_rand
-                    print(f"Incorrect input: {in_rand} Result difference: {bin(result_difference)}")
+                    #print(f"Incorrect input: {in_rand} Result difference: {bin(result_difference)}")
                     incorrect_outputs.append(result_difference)
                     #store the input
                     incorrect_inputs.append(in_rand)
@@ -120,7 +121,7 @@ Wait for a second and you should get the output back! It will also be printed ou
                     and_guy = and_guy & incorrect_inputs[i]
                     or_guy = or_guy | incorrect_inputs[i]
                 trig_result = ~(and_guy ^ or_guy)
-                for i in range(0, bytes_to_write * 8):
+                for i in range(0, input_length):
                     bit = (trig_result >> i) & 0x01
                     if bit == 1:
                         # We have a trigger input, check the or list to see if its a 0
@@ -143,7 +144,7 @@ Wait for a second and you should get the output back! It will also be printed ou
                             # If this has not been encountered before
                             if j not in pay_bits:
                                 pay_bits.append(j)
-                    print(f"For input: {incorrect_inputs[i]}, payload bits were {payload_bit} ")
+                    #print(f"For input: {incorrect_inputs[i]}, payload bits were {payload_bit} ")
                 print(f"Bits affected by payload: {sorted(pay_bits)}")
                 print(f"Number of incorrect outputs: {len(incorrect_outputs)}")
             print("Connection closed.")
